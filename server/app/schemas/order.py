@@ -1,5 +1,6 @@
 """Schemas for creating and returning customer orders."""
 
+from datetime import datetime
 from decimal import Decimal
 from typing import Self
 
@@ -53,7 +54,9 @@ class OrderCreate(BaseModel):
 class OrderItemRead(BaseModel):
     """Stored order-item price snapshot."""
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
     id: int
     product_id: int
@@ -63,9 +66,11 @@ class OrderItemRead(BaseModel):
 
 
 class OrderRead(BaseModel):
-    """Order returned after successful creation."""
+    """Customer order response."""
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
     id: int
     customer_id: int
@@ -73,4 +78,6 @@ class OrderRead(BaseModel):
     created_by_user_id: int
     total: Decimal
     status: OrderStatus
+    created_at: datetime
+    updated_at: datetime
     items: list[OrderItemRead]

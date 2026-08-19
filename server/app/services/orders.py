@@ -3,7 +3,7 @@
 from decimal import Decimal, ROUND_HALF_UP
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.contract_price import ContractPrice
 from app.models.enums import OrderStatus
@@ -40,6 +40,81 @@ class InsufficientStockError(Exception):
 
 class OrderAmountTooLargeError(Exception):
     """Raised when an amount exceeds database precision."""
+
+
+class OrderNotFoundError(Exception):
+    """Raised when a customer order cannot be found."""
+
+
+class OrderNotCancellableError(Exception):
+    """Raised when an order is no longer pending."""
+
+    def __init__(
+        self,
+        current_status: OrderStatus,
+    ) -> None:
+        self.current_status = current_status
+
+        super().__init__(
+            f"Order cannot be cancelled from status "
+            f"{current_status.value}"
+        )
+
+
+class OrderDataIntegrityError(Exception):
+    """Raised when stored order data is inconsistent."""
+
+
+def get_customer_orders(
+    db: Session,
+    *,
+    customer_id: int,
+    offset: int = 0,
+    limit: int = 20,
+) -> list[Order]:
+    """Return orders belonging to one customer."""
+
+    statement = (
+        select(Order)
+        .where(
+            Order.customer_id == customer_id,
+        )
+        .options(
+            selectinload(Order.items),
+        )
+        .order_by(
+            Order.created_at.desc(),
+            Order.id.desc(),
+        )
+        .offset(offset)
+        .limit(limit)
+    )
+
+    return list(
+        db.scalars(statement).all()
+    )
+
+
+def get_customer_order(
+    db: Session,
+    *,
+    customer_id: int,
+    order_id: int,
+) -> Order | None:
+    """Return one order only when it belongs to the customer."""
+
+    statement = (
+        select(Order)
+        .where(
+            Order.id == order_id,
+            Order.customer_id == customer_id,
+        )
+        .options(
+            selectinload(Order.items),
+        )
+    )
+
+    return db.scalar(statement)
 
 
 def create_order(
@@ -173,8 +248,124 @@ def create_order(
         db.add(order)
         db.commit()
 
-        return order
+    except Exception:
+        db.rollback()
+        raise
+
+    saved_order = get_customer_order(
+        db,
+        customer_id=customer_id,
+        order_id=order.id,
+    )
+
+    if saved_order is None:
+        raise OrderDataIntegrityError(
+            "Created order could not be reloaded"
+        )
+
+    return saved_order
+
+
+def cancel_order(
+    db: Session,
+    *,
+    customer_id: int,
+    order_id: int,
+) -> Order:
+    """Cancel a pending order and restore its stock atomically."""
+
+    try:
+        order_statement = (
+            select(Order)
+            .where(
+                Order.id == order_id,
+                Order.customer_id == customer_id,
+            )
+            .with_for_update()
+        )
+
+        order = db.scalar(order_statement)
+
+        if order is None:
+            raise OrderNotFoundError(
+                "Order not found"
+            )
+
+        if order.status != OrderStatus.PENDING:
+            raise OrderNotCancellableError(
+                order.status
+            )
+
+        item_statement = (
+            select(OrderItem)
+            .where(
+                OrderItem.order_id == order.id,
+            )
+            .order_by(
+                OrderItem.product_id,
+            )
+        )
+
+        order_items = list(
+            db.scalars(item_statement).all()
+        )
+
+        if not order_items:
+            raise OrderDataIntegrityError(
+                "Order contains no items"
+            )
+
+        product_ids = [
+            item.product_id
+            for item in order_items
+        ]
+
+        product_statement = (
+            select(Product)
+            .where(
+                Product.id.in_(product_ids),
+            )
+            .order_by(
+                Product.id,
+            )
+            .with_for_update()
+        )
+
+        products = list(
+            db.scalars(product_statement).all()
+        )
+
+        if len(products) != len(product_ids):
+            raise OrderDataIntegrityError(
+                "One or more order products are missing"
+            )
+
+        products_by_id = {
+            product.id: product
+            for product in products
+        }
+
+        for item in order_items:
+            product = products_by_id[item.product_id]
+            product.stock += item.quantity
+
+        order.status = OrderStatus.CANCELLED
+
+        db.commit()
 
     except Exception:
         db.rollback()
         raise
+
+    cancelled_order = get_customer_order(
+        db,
+        customer_id=customer_id,
+        order_id=order_id,
+    )
+
+    if cancelled_order is None:
+        raise OrderDataIntegrityError(
+            "Cancelled order could not be reloaded"
+        )
+
+    return cancelled_order
