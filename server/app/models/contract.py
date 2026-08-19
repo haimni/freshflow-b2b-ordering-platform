@@ -25,6 +25,7 @@ from app.models.enums import ContractType
 if TYPE_CHECKING:
     from app.models.contract_price import ContractPrice
     from app.models.customer import Customer
+    from app.models.order import Order
 
 
 class Contract(Base):
@@ -115,5 +116,9 @@ class Contract(Base):
     )
 
     prices: Mapped[list[ContractPrice]] = relationship(
+        back_populates="contract",
+    )
+
+    orders: Mapped[list[Order]] = relationship(
         back_populates="contract",
     )

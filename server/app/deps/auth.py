@@ -83,3 +83,14 @@ CurrentAdmin = Annotated[
     User,
     Depends(get_current_admin),
 ]
+
+
+get_current_customer_user = require_roles(
+    UserRole.CUSTOMER_MANAGER,
+    UserRole.CUSTOMER_USER,
+)
+
+CurrentCustomerUser = Annotated[
+    User,
+    Depends(get_current_customer_user),
+]

@@ -1,8 +1,7 @@
-"""add contract type
+"""Add contract type.
 
 Revision ID: 3ff421f34990
 Revises: 20260811_01
-Create Date: 2026-08-19 11:32:13.185097
 """
 
 from collections.abc import Sequence
@@ -10,14 +9,15 @@ from collections.abc import Sequence
 from alembic import op
 import sqlalchemy as sa
 
-revision: str = '3ff421f34990'
-down_revision: str | None = '20260811_01'
+
+revision: str = "3ff421f34990"
+down_revision: str | None = "20260811_01"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    """Add the contract type discriminator."""
+    """Add the contract type column."""
 
     op.add_column(
         "contracts",
@@ -35,7 +35,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove the contract type discriminator."""
+    """Remove the contract type column."""
 
     op.drop_column(
         "contracts",
