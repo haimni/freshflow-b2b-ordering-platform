@@ -36,7 +36,7 @@ def get_current_user(
     token: BearerToken,
     db: DatabaseSession,
 ) -> User:
-    """Return the active user represented by a valid access token."""
+    """Return the active user represented by an access token."""
 
     try:
         user_id = decode_access_token(token)
@@ -51,13 +51,16 @@ def get_current_user(
     return user
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUser = Annotated[
+    User,
+    Depends(get_current_user),
+]
 
 
 def require_roles(
     *allowed_roles: UserRole,
 ) -> Callable[..., User]:
-    """Create a dependency that permits only selected roles."""
+    """Create a dependency that permits selected roles."""
 
     def role_dependency(
         current_user: CurrentUser,
@@ -71,3 +74,12 @@ def require_roles(
         return current_user
 
     return role_dependency
+
+
+# These definitions must appear after require_roles().
+get_current_admin = require_roles(UserRole.ADMIN)
+
+CurrentAdmin = Annotated[
+    User,
+    Depends(get_current_admin),
+]
