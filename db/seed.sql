@@ -175,6 +175,7 @@ INSERT INTO contracts (
     id,
     customer_id,
     contract_name,
+    contract_type,
     valid_from,
     valid_until,
     active
@@ -184,6 +185,7 @@ VALUES
         1,
         1,
         'הסכם מסחרי לדוגמה',
+        'custom',
         '2026-01-01',
         '2026-12-31',
         TRUE
@@ -193,6 +195,7 @@ ON DUPLICATE KEY UPDATE
     contract_name = VALUES(contract_name),
     valid_from = VALUES(valid_from),
     valid_until = VALUES(valid_until),
+    contract_type = VALUES(contract_type),
     active = VALUES(active);
 
 -- -----------------------------------------------------------------------------

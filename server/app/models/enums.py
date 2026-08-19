@@ -11,6 +11,13 @@ class UserRole(str, Enum):
     CUSTOMER_USER = "customer_user"
 
 
+class ContractType(str, Enum):
+    """Commercial contract types supported by the platform."""
+
+    DEFAULT = "default"
+    CUSTOM = "custom"
+
+
 class OrderStatus(str, Enum):
     """Allowed states in the order workflow."""
 
