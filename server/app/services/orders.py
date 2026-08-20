@@ -15,6 +15,15 @@ from app.services.customer_catalog import get_current_contract
 MONEY_QUANTUM = Decimal("0.01")
 MAX_ORDER_AMOUNT = Decimal("9999999999.99")
 
+CUSTOMER_CANCELLABLE_STATUSES = frozenset({
+    OrderStatus.PENDING,
+})
+
+ADMIN_CANCELLABLE_STATUSES = frozenset({
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+})
+
 
 class ContractRequiredError(Exception):
     """Raised when a customer has no current contract."""
@@ -47,7 +56,7 @@ class OrderNotFoundError(Exception):
 
 
 class OrderNotCancellableError(Exception):
-    """Raised when an order is no longer pending."""
+    """Raised when an order cannot be cancelled."""
 
     def __init__(
         self,
@@ -56,7 +65,7 @@ class OrderNotCancellableError(Exception):
         self.current_status = current_status
 
         super().__init__(
-            f"Order cannot be cancelled from status "
+            "Order cannot be cancelled from status "
             f"{current_status.value}"
         )
 
@@ -269,20 +278,27 @@ def create_order(
 def cancel_order(
     db: Session,
     *,
-    customer_id: int,
     order_id: int,
+    customer_id: int | None = None,
+    allowed_statuses: frozenset[OrderStatus] = (
+        CUSTOMER_CANCELLABLE_STATUSES
+    ),
 ) -> Order:
-    """Cancel a pending order and restore its stock atomically."""
+    """Cancel an allowed order and restore stock atomically."""
 
     try:
         order_statement = (
             select(Order)
             .where(
                 Order.id == order_id,
-                Order.customer_id == customer_id,
             )
             .with_for_update()
         )
+
+        if customer_id is not None:
+            order_statement = order_statement.where(
+                Order.customer_id == customer_id,
+            )
 
         order = db.scalar(order_statement)
 
@@ -291,7 +307,7 @@ def cancel_order(
                 "Order not found"
             )
 
-        if order.status != OrderStatus.PENDING:
+        if order.status not in allowed_statuses:
             raise OrderNotCancellableError(
                 order.status
             )
@@ -351,6 +367,8 @@ def cancel_order(
 
         order.status = OrderStatus.CANCELLED
 
+        saved_customer_id = order.customer_id
+
         db.commit()
 
     except Exception:
@@ -359,7 +377,7 @@ def cancel_order(
 
     cancelled_order = get_customer_order(
         db,
-        customer_id=customer_id,
+        customer_id=saved_customer_id,
         order_id=order_id,
     )
 
