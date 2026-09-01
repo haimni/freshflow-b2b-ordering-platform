@@ -60,6 +60,7 @@ class OrderItemRead(BaseModel):
 
     id: int
     product_id: int
+    product_name: str
     quantity: Decimal
     unit_price: Decimal
     line_total: Decimal

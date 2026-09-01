@@ -246,6 +246,7 @@ def create_order(
             order.items.append(
                 OrderItem(
                     product_id=product_id,
+                    product_name=product.name,
                     quantity=quantity,
                     unit_price=unit_price,
                     line_total=line_total,

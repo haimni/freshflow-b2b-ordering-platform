@@ -16,3 +16,12 @@ export interface AuthenticatedUser {
   role: UserRole
   active: boolean
 }
+
+export interface CustomerRegistrationInput {
+  company_name: string
+  business_number: string
+  phone: string | null
+  name: string
+  email: string
+  password: string
+}

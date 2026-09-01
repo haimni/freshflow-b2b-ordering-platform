@@ -2,6 +2,7 @@ import { apiRequest } from './http'
 import type {
   AccessToken,
   AuthenticatedUser,
+  CustomerRegistrationInput,
 } from '../types/auth'
 
 const TOKEN_STORAGE_KEY = 'freshflow_access_token'
@@ -21,6 +22,18 @@ export async function login(
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: formData,
+  })
+}
+
+export function registerCustomer(
+  registration: CustomerRegistrationInput,
+): Promise<AuthenticatedUser> {
+  return apiRequest<AuthenticatedUser>('/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(registration),
   })
 }
 
