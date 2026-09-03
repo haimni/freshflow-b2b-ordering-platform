@@ -16,9 +16,9 @@ from app.db.session import get_db
 from app.deps.auth import CurrentAdmin
 from app.models.enums import OrderStatus
 from app.schemas.admin_order import (
+    AdminOrderRead,
     AdminOrderStatusUpdate,
 )
-from app.schemas.order import OrderRead
 from app.services import admin_orders as order_service
 from app.services import orders as customer_order_service
 
@@ -60,7 +60,7 @@ Limit = Annotated[
 
 @router.get(
     "",
-    response_model=list[OrderRead],
+    response_model=list[AdminOrderRead],
 )
 def read_orders(
     current_admin: CurrentAdmin,
@@ -69,7 +69,7 @@ def read_orders(
     order_status: StatusFilter = None,
     offset: Offset = 0,
     limit: Limit = 100,
-) -> list[OrderRead]:
+) -> list[AdminOrderRead]:
     """Return orders to an authenticated administrator."""
 
     return order_service.list_orders(
@@ -83,13 +83,13 @@ def read_orders(
 
 @router.get(
     "/{order_id}",
-    response_model=OrderRead,
+    response_model=AdminOrderRead,
 )
 def read_order(
     order_id: OrderId,
     current_admin: CurrentAdmin,
     db: DatabaseSession,
-) -> OrderRead:
+) -> AdminOrderRead:
     """Return one order to an administrator."""
 
     order = order_service.get_order(
@@ -108,14 +108,14 @@ def read_order(
 
 @router.patch(
     "/{order_id}/status",
-    response_model=OrderRead,
+    response_model=AdminOrderRead,
 )
 def update_order_status(
     order_id: OrderId,
     status_request: AdminOrderStatusUpdate,
     current_admin: CurrentAdmin,
     db: DatabaseSession,
-) -> OrderRead:
+) -> AdminOrderRead:
     """Advance or cancel an order."""
 
     try:
@@ -134,9 +134,7 @@ def update_order_status(
             detail="Order not found",
         ) from error
 
-    except (
-        order_service.InvalidOrderTransitionError
-    ) as error:
+    except order_service.InvalidOrderTransitionError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
@@ -147,8 +145,7 @@ def update_order_status(
         ) from error
 
     except (
-        customer_order_service
-        .OrderNotCancellableError
+        customer_order_service.OrderNotCancellableError
     ) as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -159,8 +156,7 @@ def update_order_status(
         ) from error
 
     except (
-        customer_order_service
-        .OrderDataIntegrityError
+        customer_order_service.OrderDataIntegrityError
     ) as error:
         raise HTTPException(
             status_code=(

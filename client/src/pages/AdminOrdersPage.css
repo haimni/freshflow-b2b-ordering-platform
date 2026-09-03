@@ -1,0 +1,244 @@
+.admin-orders-page {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 72px 0;
+}
+
+.admin-orders-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-orders-heading h1 {
+  margin: 8px 0;
+  color: var(--heading-color);
+  font-size: clamp(34px, 5vw, 54px);
+}
+
+.admin-orders-heading p {
+  margin: 0;
+  color: #64748b;
+}
+
+.admin-orders-eyebrow {
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-orders-count {
+  padding: 8px 14px;
+  border: 1px solid #86efac;
+  border-radius: 999px;
+  color: #166534;
+  background: #f0fdf4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-order-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.admin-filter-button {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #dbe7df;
+  border-radius: 999px;
+  color: #475569;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-filter-button--active {
+  border-color: #15803d;
+  color: #ffffff;
+  background: #15803d;
+}
+
+.admin-orders-list {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-order-card {
+  overflow: hidden;
+  border: 1px solid #dbe7df;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgb(15 23 42 / 6%);
+}
+
+.admin-order-header,
+.admin-order-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.admin-order-header span,
+.admin-order-header strong {
+  display: block;
+}
+
+.admin-order-header div > span {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.admin-order-status {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-order-status--pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.admin-order-status--confirmed,
+.admin-order-status--processing {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.admin-order-status--completed {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.admin-order-status--cancelled {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.admin-order-table-heading,
+.admin-order-item {
+  display: grid;
+  grid-template-columns:
+    minmax(160px, 1fr)
+    minmax(70px, 0.35fr)
+    minmax(90px, 0.45fr)
+    minmax(90px, 0.45fr);
+  gap: 16px;
+  padding: 14px 24px;
+}
+
+.admin-order-table-heading {
+  color: #64748b;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-order-item {
+  border-top: 1px solid #eef2f0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.admin-order-footer {
+  border-top: 1px solid #e2e8e5;
+  background: #fbfdfb;
+}
+
+.admin-order-footer > div:first-child span,
+.admin-order-footer > div:first-child strong {
+  display: block;
+}
+
+.admin-order-footer > div:first-child span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.admin-order-footer > div:first-child strong {
+  margin-top: 3px;
+  color: #166534;
+  font-size: 22px;
+}
+
+.admin-order-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-order-cancel,
+.admin-order-advance {
+  min-height: 42px;
+  padding: 0 17px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-order-cancel {
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #ffffff;
+}
+
+.admin-order-advance {
+  border: 1px solid #15803d;
+  color: #ffffff;
+  background: #15803d;
+}
+
+.admin-order-cancel:disabled,
+.admin-order-advance:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-orders-message,
+.admin-orders-error {
+  padding: 40px 24px;
+  border: 1px solid #dbe7df;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.admin-orders-error {
+  margin-bottom: 20px;
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+@media (max-width: 680px) {
+  .admin-orders-heading,
+  .admin-order-header,
+  .admin-order-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-order-table-heading {
+    display: none;
+  }
+
+  .admin-order-item {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-order-actions {
+    flex-direction: column;
+  }
+}

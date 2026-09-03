@@ -54,6 +54,7 @@ def list_orders(
         select(Order)
         .options(
             selectinload(Order.items),
+            selectinload(Order.customer),
         )
         .order_by(
             Order.created_at.desc(),
@@ -96,6 +97,7 @@ def get_order(
         )
         .options(
             selectinload(Order.items),
+            selectinload(Order.customer),
         )
     )
 

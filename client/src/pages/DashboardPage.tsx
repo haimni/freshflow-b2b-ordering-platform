@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import AdminOrdersPage from './AdminOrdersPage'
 import CustomerCatalogPage from './CustomerCatalogPage'
 import CustomerOrdersPage from './CustomerOrdersPage'
 import type {
@@ -39,6 +40,7 @@ function DashboardPage({
 
           <span>
             <strong>FreshFlow</strong>
+
             <small>
               {user.name} · {roleLabels[user.role]}
             </small>
@@ -105,15 +107,9 @@ function DashboardPage({
             />
           )
         ) : (
-          <section className="authenticated-panel">
-            <span className="user-role">
-              {roleLabels[user.role]}
-            </span>
-
-            <h1>שלום, {user.name}</h1>
-
-            <p>ממשק הניהול יחובר בשלב הבא.</p>
-          </section>
+          <AdminOrdersPage
+            onUnauthorized={onLogout}
+          />
         )}
       </main>
 
