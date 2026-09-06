@@ -61,6 +61,18 @@ function createLoadErrorMessage(error: unknown): string {
   return 'לא ניתן לטעון את הקטלוג כרגע.'
 }
 
+function sortCategories(
+  categories: AdminCategory[],
+): AdminCategory[] {
+  return [...categories].sort(
+    (firstCategory, secondCategory) =>
+      firstCategory.name.localeCompare(
+        secondCategory.name,
+        'he',
+      ),
+  )
+}
+
 function AdminCatalogPage({
   onUnauthorized,
 }: AdminCatalogPageProps) {
@@ -79,6 +91,9 @@ function AdminCatalogPage({
     showCategoryDialog,
     setShowCategoryDialog,
   ] = useState(false)
+
+  const [editingCategory, setEditingCategory] =
+    useState<AdminCategory | null>(null)
 
   useEffect(() => {
     let active = true
@@ -150,6 +165,11 @@ function AdminCatalogPage({
     )
   }, [catalogState])
 
+  function closeCategoryDialog() {
+    setEditingCategory(null)
+    setShowCategoryDialog(false)
+  }
+
   function handleCategoryCreated(
     category: AdminCategory,
   ) {
@@ -160,20 +180,39 @@ function AdminCatalogPage({
 
       return {
         status: 'loaded',
-        categories: [
+        categories: sortCategories([
           ...currentState.categories,
           category,
-        ].sort((firstCategory, secondCategory) =>
-          firstCategory.name.localeCompare(
-            secondCategory.name,
-            'he',
+        ]),
+        products: currentState.products,
+      }
+    })
+
+    closeCategoryDialog()
+  }
+
+  function handleCategoryUpdated(
+    updatedCategory: AdminCategory,
+  ) {
+    setCatalogState((currentState) => {
+      if (currentState.status !== 'loaded') {
+        return currentState
+      }
+
+      return {
+        status: 'loaded',
+        categories: sortCategories(
+          currentState.categories.map((category) =>
+            category.id === updatedCategory.id
+              ? updatedCategory
+              : category,
           ),
         ),
         products: currentState.products,
       }
     })
 
-    setShowCategoryDialog(false)
+    closeCategoryDialog()
   }
 
   return (
@@ -206,9 +245,10 @@ function AdminCatalogPage({
             <button
               type="button"
               className="admin-create-category-button"
-              onClick={() =>
+              onClick={() => {
+                setEditingCategory(null)
                 setShowCategoryDialog(true)
-              }
+              }}
             >
               קטגוריה חדשה
             </button>
@@ -258,17 +298,30 @@ function AdminCatalogPage({
                       </span>
                     </div>
 
-                    <span
-                      className={
-                        category.active
-                          ? 'admin-catalog-state admin-catalog-state--active'
-                          : 'admin-catalog-state admin-catalog-state--inactive'
-                      }
-                    >
-                      {category.active
-                        ? 'פעילה'
-                        : 'מושבתת'}
-                    </span>
+                    <div className="admin-category-card-actions">
+                      <span
+                        className={
+                          category.active
+                                                       ? 'admin-catalog-state admin-catalog-state--active'
+                            : 'admin-catalog-state admin-catalog-state--inactive'
+                        }
+                      >
+                        {category.active
+                          ? 'פעילה'
+                          : 'מושבתת'}
+                      </span>
+
+                      <button
+                        type="button"
+                        className="admin-edit-category-button"
+                        onClick={() => {
+                          setEditingCategory(category)
+                          setShowCategoryDialog(true)
+                        }}
+                      >
+                        עריכה
+                      </button>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -439,10 +492,10 @@ function AdminCatalogPage({
 
       {showCategoryDialog && (
         <AdminCategoryDialog
-          onClose={() =>
-            setShowCategoryDialog(false)
-          }
+          category={editingCategory ?? undefined}
+          onClose={closeCategoryDialog}
           onCreated={handleCategoryCreated}
+          onUpdated={handleCategoryUpdated}
           onUnauthorized={onUnauthorized}
         />
       )}

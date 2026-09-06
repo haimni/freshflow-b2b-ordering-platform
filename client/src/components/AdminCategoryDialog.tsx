@@ -3,14 +3,19 @@ import {
   type FormEvent,
 } from 'react'
 
-import { createAdminCategory } from '../api/adminCatalog'
+import {
+  createAdminCategory,
+  updateAdminCategory,
+} from '../api/adminCatalog'
 import { ApiError } from '../api/http'
 import type { AdminCategory } from '../types/adminCatalog'
 import './AdminCategoryDialog.css'
 
 interface AdminCategoryDialogProps {
+  category?: AdminCategory
   onClose: () => void
   onCreated: (category: AdminCategory) => void
+  onUpdated?: (category: AdminCategory) => void
   onUnauthorized: () => void
 }
 
@@ -21,11 +26,23 @@ function createErrorMessage(error: unknown): string {
     }
 
     if (error.status === 403) {
-      return 'אין הרשאה ליצור קטגוריה.'
+      return 'אין הרשאה לבצע את הפעולה.'
     }
 
     if (error.status === 409) {
+      if (
+        error.message.includes(
+          'Category has active products',
+        )
+      ) {
+        return 'לא ניתן להשבית קטגוריה שיש בה מוצרים פעילים.'
+      }
+
       return 'כבר קיימת קטגוריה בשם הזה.'
+    }
+
+    if (error.status === 404) {
+      return 'הקטגוריה לא נמצאה.'
     }
 
     if (error.status === 422) {
@@ -33,18 +50,32 @@ function createErrorMessage(error: unknown): string {
     }
   }
 
-  return 'לא ניתן ליצור את הקטגוריה כרגע.'
+  return 'לא ניתן לשמור את הקטגוריה כרגע.'
 }
 
 function AdminCategoryDialog({
+  category,
   onClose,
   onCreated,
+  onUpdated,
   onUnauthorized,
 }: AdminCategoryDialogProps) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [active, setActive] = useState(true)
+  const editing = category !== undefined
+
+  const [name, setName] = useState(
+    category?.name ?? '',
+  )
+
+  const [description, setDescription] = useState(
+    category?.description ?? '',
+  )
+
+  const [active, setActive] = useState(
+    category?.active ?? true,
+  )
+
   const [submitting, setSubmitting] = useState(false)
+
   const [errorMessage, setErrorMessage] =
     useState<string | null>(null)
 
@@ -65,13 +96,25 @@ function AdminCategoryDialog({
     setSubmitting(true)
 
     try {
-      const category = await createAdminCategory({
-        name: normalizedName,
-        description: normalizedDescription || null,
-        active,
-      })
+      if (category) {
+        const updatedCategory =
+          await updateAdminCategory(category.id, {
+            name: normalizedName,
+            description: normalizedDescription || null,
+            active,
+          })
 
-      onCreated(category)
+        onUpdated?.(updatedCategory)
+      } else {
+        const createdCategory =
+          await createAdminCategory({
+            name: normalizedName,
+            description: normalizedDescription || null,
+            active,
+          })
+
+        onCreated(createdCategory)
+      }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         onUnauthorized()
@@ -89,7 +132,10 @@ function AdminCategoryDialog({
       className="admin-category-dialog-backdrop"
       role="presentation"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
+        if (
+          event.target === event.currentTarget &&
+          !submitting
+        ) {
           onClose()
         }
       }}
@@ -102,10 +148,16 @@ function AdminCategoryDialog({
       >
         <div className="admin-category-dialog-header">
           <div>
-            <span>קטגוריה חדשה</span>
+            <span>
+              {editing
+                ? 'עדכון קטגוריה'
+                : 'קטגוריה חדשה'}
+            </span>
 
             <h2 id="admin-category-dialog-title">
-              יצירת קטגוריה
+              {editing
+                ? `עריכת ${category.name}`
+                : 'יצירת קטגוריה'}
             </h2>
           </div>
 
@@ -163,10 +215,15 @@ function AdminCategoryDialog({
               }
             />
 
-            <span>
-              הקטגוריה פעילה וניתן לשייך אליה מוצרים
-            </span>
+            <span>הקטגוריה פעילה</span>
           </label>
+
+          {editing && category.active && !active && (
+            <p className="admin-category-form-warning">
+              ניתן להשבית קטגוריה רק אם אין בה מוצרים
+              פעילים.
+            </p>
+          )}
 
           {errorMessage && (
             <div
@@ -193,8 +250,10 @@ function AdminCategoryDialog({
               disabled={submitting}
             >
               {submitting
-                ? 'יוצר קטגוריה...'
-                : 'יצירת קטגוריה'}
+                ? 'שומר...'
+                : editing
+                  ? 'שמירת שינויים'
+                  : 'יצירת קטגוריה'}
             </button>
           </div>
         </form>
