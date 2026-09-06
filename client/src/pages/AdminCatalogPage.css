@@ -295,3 +295,37 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.admin-catalog-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-create-category-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #15803d;
+  border-radius: 9px;
+  color: #ffffff;
+  background: #15803d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-create-category-button:hover {
+  background: #166534;
+}
+
+@media (max-width: 680px) {
+  .admin-catalog-heading-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-create-category-button {
+    width: 100%;
+  }
+}

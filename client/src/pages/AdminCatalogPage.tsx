@@ -5,6 +5,7 @@ import {
   getAdminProducts,
 } from '../api/adminCatalog'
 import { ApiError } from '../api/http'
+import AdminCategoryDialog from '../components/AdminCategoryDialog'
 import type {
   AdminCategory,
   AdminProduct,
@@ -73,6 +74,11 @@ function AdminCatalogPage({
 
   const [activeFilter, setActiveFilter] =
     useState<ActiveFilter>('all')
+
+  const [
+    showCategoryDialog,
+    setShowCategoryDialog,
+  ] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -144,6 +150,32 @@ function AdminCatalogPage({
     )
   }, [catalogState])
 
+  function handleCategoryCreated(
+    category: AdminCategory,
+  ) {
+    setCatalogState((currentState) => {
+      if (currentState.status !== 'loaded') {
+        return currentState
+      }
+
+      return {
+        status: 'loaded',
+        categories: [
+          ...currentState.categories,
+          category,
+        ].sort((firstCategory, secondCategory) =>
+          firstCategory.name.localeCompare(
+            secondCategory.name,
+            'he',
+          ),
+        ),
+        products: currentState.products,
+      }
+    })
+
+    setShowCategoryDialog(false)
+  }
+
   return (
     <section className="admin-catalog-page">
       <div className="admin-catalog-heading">
@@ -160,14 +192,26 @@ function AdminCatalogPage({
         </div>
 
         {catalogState.status === 'loaded' && (
-          <div className="admin-catalog-counters">
-            <span>
-              {catalogState.categories.length} קטגוריות
-            </span>
+          <div className="admin-catalog-heading-actions">
+            <div className="admin-catalog-counters">
+              <span>
+                {catalogState.categories.length} קטגוריות
+              </span>
 
-            <span>
-              {catalogState.products.length} מוצרים
-            </span>
+              <span>
+                {catalogState.products.length} מוצרים
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="admin-create-category-button"
+              onClick={() =>
+                setShowCategoryDialog(true)
+              }
+            >
+              קטגוריה חדשה
+            </button>
           </div>
         )}
       </div>
@@ -368,6 +412,7 @@ function AdminCatalogPage({
                       <div className="admin-product-metrics">
                         <div>
                           <span>מחיר רגיל</span>
+
                           <strong>
                             {formatCurrency(
                               product.default_price,
@@ -377,6 +422,7 @@ function AdminCatalogPage({
 
                         <div>
                           <span>מלאי נוכחי</span>
+
                           <strong>
                             {formatStock(product.stock)}
                           </strong>
@@ -389,6 +435,16 @@ function AdminCatalogPage({
             )}
           </section>
         </>
+      )}
+
+      {showCategoryDialog && (
+        <AdminCategoryDialog
+          onClose={() =>
+            setShowCategoryDialog(false)
+          }
+          onCreated={handleCategoryCreated}
+          onUnauthorized={onUnauthorized}
+        />
       )}
     </section>
   )
