@@ -34,6 +34,12 @@
   font-weight: 800;
 }
 
+.admin-catalog-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .admin-catalog-counters {
   display: flex;
   gap: 8px;
@@ -48,6 +54,49 @@
   background: #f0fdf4;
   font-size: 11px;
   font-weight: 800;
+}
+
+.admin-catalog-create-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-create-category-button,
+.admin-create-product-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-create-category-button {
+  border: 1px solid #15803d;
+  color: #ffffff;
+  background: #15803d;
+}
+
+.admin-create-category-button:hover {
+  background: #166534;
+}
+
+.admin-create-product-button {
+  border: 1px solid #166534;
+  color: #166534;
+  background: #ffffff;
+}
+
+.admin-create-product-button:hover:not(:disabled) {
+  background: #f0fdf4;
+}
+
+.admin-create-product-button:disabled {
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  background: #f1f5f9;
+  cursor: not-allowed;
 }
 
 .admin-category-section,
@@ -95,6 +144,34 @@
   color: #64748b;
   font-size: 11px;
   line-height: 1.5;
+}
+
+.admin-category-card-actions,
+.admin-product-card-actions {
+  display: flex;
+  align-items: end;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-edit-category-button,
+.admin-edit-product-button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #166534;
+  background: #f0fdf4;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-edit-category-button:hover,
+.admin-edit-product-button:hover {
+  border-color: #15803d;
+  background: #dcfce7;
 }
 
 .admin-catalog-state {
@@ -214,11 +291,11 @@
 }
 
 .admin-product-title strong,
-.admin-product-title div > span {
+.admin-product-title > div:first-child > span {
   display: block;
 }
 
-.admin-product-title div > span {
+.admin-product-title > div:first-child > span {
   margin-top: 4px;
   color: #64748b;
   font-size: 11px;
@@ -282,8 +359,18 @@
     flex-direction: column;
   }
 
+  .admin-catalog-heading-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .admin-catalog-counters {
     flex-wrap: wrap;
+  }
+
+  .admin-catalog-create-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .admin-catalog-filters select {
@@ -294,99 +381,8 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
   }
-}
 
-.admin-catalog-heading-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.admin-create-category-button {
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid #15803d;
-  border-radius: 9px;
-  color: #ffffff;
-  background: #15803d;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.admin-create-category-button:hover {
-  background: #166534;
-}
-
-@media (max-width: 680px) {
-  .admin-catalog-heading-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .admin-create-category-button {
-    width: 100%;
-  }
-}
-
-.admin-category-card-actions {
-  display: flex;
-  align-items: end;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.admin-edit-category-button {
-  min-height: 30px;
-  padding: 0 11px;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  color: #166534;
-  background: #f0fdf4;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.admin-edit-category-button:hover {
-  border-color: #15803d;
-  background: #dcfce7;
-}
-
-.admin-catalog-create-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.admin-create-product-button {
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid #166534;
-  border-radius: 9px;
-  color: #166534;
-  background: #ffffff;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.admin-create-product-button:hover:not(:disabled) {
-  background: #f0fdf4;
-}
-
-.admin-create-product-button:disabled {
-  border-color: #cbd5e1;
-  color: #94a3b8;
-  background: #f1f5f9;
-  cursor: not-allowed;
-}
-
-@media (max-width: 680px) {
-  .admin-catalog-create-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .admin-product-grid {
+    grid-template-columns: 1fr;
   }
 }

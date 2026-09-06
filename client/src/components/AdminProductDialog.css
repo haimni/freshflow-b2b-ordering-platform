@@ -173,3 +173,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-product-form input:disabled,
+.admin-product-form select:disabled,
+.admin-product-form textarea:disabled {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.admin-product-stock-note {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.5;
+}

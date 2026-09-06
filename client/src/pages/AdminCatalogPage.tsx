@@ -113,6 +113,9 @@ function AdminCatalogPage({
   const [editingCategory, setEditingCategory] =
     useState<AdminCategory | null>(null)
 
+  const [editingProduct, setEditingProduct] =
+    useState<AdminProduct | null>(null)
+
   useEffect(() => {
     let active = true
 
@@ -188,6 +191,11 @@ function AdminCatalogPage({
     setShowCategoryDialog(false)
   }
 
+  function closeProductDialog() {
+    setEditingProduct(null)
+    setShowProductDialog(false)
+  }
+
   function handleCategoryCreated(
     category: AdminCategory,
   ) {
@@ -251,7 +259,31 @@ function AdminCatalogPage({
       }
     })
 
-    setShowProductDialog(false)
+    closeProductDialog()
+  }
+
+  function handleProductUpdated(
+    updatedProduct: AdminProduct,
+  ) {
+    setCatalogState((currentState) => {
+      if (currentState.status !== 'loaded') {
+        return currentState
+      }
+
+      return {
+        status: 'loaded',
+        categories: currentState.categories,
+        products: sortProducts(
+          currentState.products.map((product) =>
+            product.id === updatedProduct.id
+              ? updatedProduct
+              : product,
+          ),
+        ),
+      }
+    })
+
+    closeProductDialog()
   }
 
   return (
@@ -265,7 +297,8 @@ function AdminCatalogPage({
           <h1>ניהול קטלוג</h1>
 
           <p>
-            צפייה במוצרים, קטגוריות, מחירים ומלאי.
+            צפייה וניהול של מוצרים, קטגוריות, מחירים
+            ומלאי.
           </p>
         </div>
 
@@ -299,9 +332,10 @@ function AdminCatalogPage({
                 disabled={
                   catalogState.categories.length === 0
                 }
-                onClick={() =>
+                onClick={() => {
+                  setEditingProduct(null)
                   setShowProductDialog(true)
-                }
+                }}
               >
                 מוצר חדש
               </button>
@@ -498,17 +532,30 @@ function AdminCatalogPage({
                           </span>
                         </div>
 
-                        <span
-                          className={
-                            product.active
-                              ? 'admin-catalog-state admin-catalog-state--active'
-                              : 'admin-catalog-state admin-catalog-state--inactive'
-                          }
-                        >
-                          {product.active
-                            ? 'פעיל'
-                            : 'מושבת'}
-                        </span>
+                        <div className="admin-product-card-actions">
+                          <span
+                            className={
+                              product.active
+                                ? 'admin-catalog-state admin-catalog-state--active'
+                                : 'admin-catalog-state admin-catalog-state--inactive'
+                            }
+                          >
+                            {product.active
+                              ? 'פעיל'
+                              : 'מושבת'}
+                          </span>
+
+                          <button
+                            type="button"
+                            className="admin-edit-product-button"
+                            onClick={() => {
+                              setEditingProduct(product)
+                              setShowProductDialog(true)
+                            }}
+                          >
+                            עריכה
+                          </button>
+                        </div>
                       </div>
 
                       <p>
@@ -558,10 +605,10 @@ function AdminCatalogPage({
         catalogState.status === 'loaded' && (
           <AdminProductDialog
             categories={catalogState.categories}
-            onClose={() =>
-              setShowProductDialog(false)
-            }
+            product={editingProduct ?? undefined}
+            onClose={closeProductDialog}
             onCreated={handleProductCreated}
+            onUpdated={handleProductUpdated}
             onUnauthorized={onUnauthorized}
           />
         )}

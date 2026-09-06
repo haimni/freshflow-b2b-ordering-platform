@@ -3,7 +3,10 @@ import {
   type FormEvent,
 } from 'react'
 
-import { createAdminProduct } from '../api/adminCatalog'
+import {
+  createAdminProduct,
+  updateAdminProduct,
+} from '../api/adminCatalog'
 import { ApiError } from '../api/http'
 import type {
   AdminCategory,
@@ -13,8 +16,10 @@ import './AdminProductDialog.css'
 
 interface AdminProductDialogProps {
   categories: AdminCategory[]
+  product?: AdminProduct
   onClose: () => void
   onCreated: (product: AdminProduct) => void
+  onUpdated?: (product: AdminProduct) => void
   onUnauthorized: () => void
 }
 
@@ -28,11 +33,11 @@ function createErrorMessage(error: unknown): string {
     }
 
     if (error.status === 403) {
-      return 'אין הרשאה ליצור מוצר.'
+      return 'אין הרשאה לבצע את הפעולה.'
     }
 
     if (error.status === 404) {
-      return 'הקטגוריה שנבחרה אינה קיימת.'
+      return 'המוצר או הקטגוריה לא נמצאו.'
     }
 
     if (error.status === 409) {
@@ -44,16 +49,24 @@ function createErrorMessage(error: unknown): string {
     }
   }
 
-  return 'לא ניתן ליצור את המוצר כרגע.'
+  return 'לא ניתן לשמור את המוצר כרגע.'
 }
 
 function AdminProductDialog({
   categories,
+  product,
   onClose,
   onCreated,
+  onUpdated,
   onUnauthorized,
 }: AdminProductDialogProps) {
+  const editing = product !== undefined
+
   const initialCategory =
+    categories.find(
+      (category) =>
+        category.id === product?.category_id,
+    ) ??
     categories.find((category) => category.active) ??
     categories[0]
 
@@ -61,12 +74,30 @@ function AdminProductDialog({
     initialCategory?.id ?? 0,
   )
 
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [defaultPrice, setDefaultPrice] = useState('')
-  const [stock, setStock] = useState('0.000')
-  const [imageUrl, setImageUrl] = useState('')
-  const [active, setActive] = useState(true)
+  const [name, setName] = useState(
+    product?.name ?? '',
+  )
+
+  const [description, setDescription] = useState(
+    product?.description ?? '',
+  )
+
+  const [defaultPrice, setDefaultPrice] = useState(
+    product?.default_price ?? '',
+  )
+
+  const [stock, setStock] = useState(
+    product?.stock ?? '0.000',
+  )
+
+  const [imageUrl, setImageUrl] = useState(
+    product?.image_url ?? '',
+  )
+
+  const [active, setActive] = useState(
+    product?.active ?? true,
+  )
+
   const [submitting, setSubmitting] = useState(false)
 
   const [errorMessage, setErrorMessage] =
@@ -112,7 +143,10 @@ function AdminProductDialog({
       return
     }
 
-    if (!STOCK_PATTERN.test(normalizedStock)) {
+    if (
+      !editing &&
+      !STOCK_PATTERN.test(normalizedStock)
+    ) {
       setErrorMessage(
         'המלאי חייב להיות מספר שאינו שלילי, עם עד שלוש ספרות אחרי הנקודה.',
       )
@@ -122,17 +156,32 @@ function AdminProductDialog({
     setSubmitting(true)
 
     try {
-      const product = await createAdminProduct({
-        category_id: categoryId,
-        name: normalizedName,
-        description: normalizedDescription || null,
-        default_price: normalizedPrice,
-        stock: normalizedStock,
-        image_url: normalizedImageUrl || null,
-        active,
-      })
+      if (product) {
+        const updatedProduct =
+          await updateAdminProduct(product.id, {
+            category_id: categoryId,
+            name: normalizedName,
+            description: normalizedDescription || null,
+            default_price: normalizedPrice,
+            image_url: normalizedImageUrl || null,
+            active,
+          })
 
-      onCreated(product)
+        onUpdated?.(updatedProduct)
+      } else {
+        const createdProduct =
+          await createAdminProduct({
+            category_id: categoryId,
+            name: normalizedName,
+            description: normalizedDescription || null,
+            default_price: normalizedPrice,
+            stock: normalizedStock,
+            image_url: normalizedImageUrl || null,
+            active,
+          })
+
+        onCreated(createdProduct)
+      }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         onUnauthorized()
@@ -166,10 +215,14 @@ function AdminProductDialog({
       >
         <div className="admin-product-dialog-header">
           <div>
-            <span>מוצר חדש</span>
+            <span>
+              {editing ? 'עדכון מוצר' : 'מוצר חדש'}
+            </span>
 
             <h2 id="admin-product-dialog-title">
-              יצירת מוצר
+              {editing
+                ? `עריכת ${product.name}`
+                : 'יצירת מוצר'}
             </h2>
           </div>
 
@@ -257,7 +310,11 @@ function AdminProductDialog({
             </label>
 
             <label>
-              <span>מלאי התחלתי</span>
+              <span>
+                {editing
+                  ? 'מלאי נוכחי'
+                  : 'מלאי התחלתי'}
+              </span>
 
               <input
                 type="text"
@@ -265,11 +322,17 @@ function AdminProductDialog({
                 value={stock}
                 placeholder="0.000"
                 required
-                disabled={submitting}
+                disabled={submitting || editing}
                 onChange={(event) =>
                   setStock(event.target.value)
                 }
               />
+
+              {editing && (
+                <small className="admin-product-stock-note">
+                  שינוי מלאי מתבצע בפעולה נפרדת ומתועדת.
+                </small>
+              )}
             </label>
           </div>
 
@@ -343,8 +406,10 @@ function AdminProductDialog({
               }
             >
               {submitting
-                ? 'יוצר מוצר...'
-                : 'יצירת מוצר'}
+                ? 'שומר...'
+                : editing
+                  ? 'שמירת שינויים'
+                  : 'יצירת מוצר'}
             </button>
           </div>
         </form>
