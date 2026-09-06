@@ -16,6 +16,9 @@ if TYPE_CHECKING:
     from app.models.category import Category
     from app.models.contract_price import ContractPrice
     from app.models.order_item import OrderItem
+    from app.models.inventory_adjustment import (
+    InventoryAdjustment,
+    )
 
 
 class Product(Base):
@@ -36,7 +39,11 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     default_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    stock: Mapped[Decimal] = mapped_column(Numeric(12, 3), nullable=False, server_default=text("0"))
+    stock: Mapped[Decimal] = mapped_column(
+        Numeric(12, 3),
+        nullable=False,
+        server_default=text("'0.000'"),
+    )
     image_url: Mapped[str | None] = mapped_column(String(2048))
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("1"))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.current_timestamp())
@@ -49,3 +56,9 @@ class Product(Base):
     category: Mapped[Category] = relationship(back_populates="products")
     contract_prices: Mapped[list[ContractPrice]] = relationship(back_populates="product")
     order_items: Mapped[list[OrderItem]] = relationship(back_populates="product")
+
+    inventory_adjustments: Mapped[
+    list[InventoryAdjustment]
+    ] = relationship(
+        back_populates="product",
+    )

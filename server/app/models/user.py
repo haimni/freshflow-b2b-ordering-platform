@@ -25,6 +25,9 @@ from app.models.enums import UserRole
 if TYPE_CHECKING:
     from app.models.customer import Customer
     from app.models.order import Order
+    from app.models.inventory_adjustment import (
+        InventoryAdjustment,
+    )
 
 
 class User(Base):
@@ -112,4 +115,10 @@ class User(Base):
 
     created_orders: Mapped[list[Order]] = relationship(
         back_populates="created_by_user",
+    )
+
+    inventory_adjustments: Mapped[
+    list[InventoryAdjustment]
+    ] = relationship(
+        back_populates="performed_by_user",
     )

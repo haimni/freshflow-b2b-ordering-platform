@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from app.api.v1.routes import (
     admin_catalog,
+    admin_inventory,
     admin_orders,
     admin_users,
     auth,
@@ -23,3 +24,4 @@ api_router.include_router(customer_orders.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_orders.router)
 api_router.include_router(admin_catalog.router)
+api_router.include_router(admin_inventory.router)
