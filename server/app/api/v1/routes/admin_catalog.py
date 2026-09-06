@@ -7,6 +7,7 @@ from fastapi import (
     Depends,
     HTTPException,
     Path,
+    Query,
     status,
 )
 from sqlalchemy.orm import Session
@@ -44,6 +45,47 @@ ProductId = Annotated[
     int,
     Path(gt=0),
 ]
+
+Offset = Annotated[
+    int,
+    Query(ge=0),
+]
+
+Limit = Annotated[
+    int,
+    Query(ge=1, le=100),
+]
+
+CategoryFilter = Annotated[
+    int | None,
+    Query(gt=0),
+]
+
+ActiveFilter = Annotated[
+    bool | None,
+    Query(),
+]
+
+
+@router.get(
+    "/categories",
+    response_model=list[CategoryRead],
+)
+def read_categories(
+    current_admin: CurrentAdmin,
+    db: DatabaseSession,
+    active: ActiveFilter = None,
+    offset: Offset = 0,
+    limit: Limit = 100,
+) -> list[CategoryRead]:
+    """Return categories visible to an administrator."""
+
+    return catalog_service.list_categories(
+        db,
+        active=active,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @router.post(
@@ -92,7 +134,7 @@ def update_category(
             db,
             category_id=category_id,
             changes=category_request.model_dump(
-                exclude_unset=True
+                exclude_unset=True,
             ),
         )
 
@@ -119,6 +161,29 @@ def update_category(
             status_code=status.HTTP_409_CONFLICT,
             detail="Category has active products",
         ) from error
+
+
+@router.get(
+    "/products",
+    response_model=list[ProductRead],
+)
+def read_products(
+    current_admin: CurrentAdmin,
+    db: DatabaseSession,
+    category_id: CategoryFilter = None,
+    active: ActiveFilter = None,
+    offset: Offset = 0,
+    limit: Limit = 100,
+) -> list[ProductRead]:
+    """Return products visible to an administrator."""
+
+    return catalog_service.list_products(
+        db,
+        category_id=category_id,
+        active=active,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @router.post(
@@ -182,7 +247,7 @@ def update_product(
             db,
             product_id=product_id,
             changes=product_request.model_dump(
-                exclude_unset=True
+                exclude_unset=True,
             ),
         )
 

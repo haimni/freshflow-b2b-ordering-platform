@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import AdminCatalogPage from './AdminCatalogPage'
 import AdminOrdersPage from './AdminOrdersPage'
 import CustomerCatalogPage from './CustomerCatalogPage'
 import CustomerOrdersPage from './CustomerOrdersPage'
@@ -14,6 +15,7 @@ interface DashboardPageProps {
 }
 
 type CustomerView = 'catalog' | 'orders'
+type AdminView = 'orders' | 'catalog'
 
 const roleLabels: Record<UserRole, string> = {
   admin: 'מנהל מערכת',
@@ -27,6 +29,9 @@ function DashboardPage({
 }: DashboardPageProps) {
   const [customerView, setCustomerView] =
     useState<CustomerView>('catalog')
+
+  const [adminView, setAdminView] =
+    useState<AdminView>('orders')
 
   const isCustomer =
     user.role === 'customer_manager' ||
@@ -48,7 +53,7 @@ function DashboardPage({
         </a>
 
         <div className="dashboard-actions">
-          {isCustomer && (
+          {isCustomer ? (
             <nav
               className="dashboard-navigation"
               aria-label="ניווט באזור הלקוח"
@@ -83,6 +88,37 @@ function DashboardPage({
                 ההזמנות שלי
               </button>
             </nav>
+          ) : (
+            <nav
+              className="dashboard-navigation"
+              aria-label="ניווט בממשק המנהל"
+            >
+              <button
+                type="button"
+                className={
+                  adminView === 'orders'
+                    ? 'dashboard-navigation-button dashboard-navigation-button--active'
+                    : 'dashboard-navigation-button'
+                }
+                aria-pressed={adminView === 'orders'}
+                onClick={() => setAdminView('orders')}
+              >
+                הזמנות
+              </button>
+
+              <button
+                type="button"
+                className={
+                  adminView === 'catalog'
+                    ? 'dashboard-navigation-button dashboard-navigation-button--active'
+                    : 'dashboard-navigation-button'
+                }
+                aria-pressed={adminView === 'catalog'}
+                onClick={() => setAdminView('catalog')}
+              >
+                קטלוג
+              </button>
+            </nav>
           )}
 
           <button
@@ -106,8 +142,12 @@ function DashboardPage({
               onUnauthorized={onLogout}
             />
           )
-        ) : (
+        ) : adminView === 'orders' ? (
           <AdminOrdersPage
+            onUnauthorized={onLogout}
+          />
+        ) : (
+          <AdminCatalogPage
             onUnauthorized={onLogout}
           />
         )}

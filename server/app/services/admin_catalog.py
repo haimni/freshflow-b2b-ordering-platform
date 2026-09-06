@@ -30,6 +30,64 @@ class ProductNotFoundError(Exception):
     """Raised when a product cannot be found."""
 
 
+def list_categories(
+    db: Session,
+    *,
+    active: bool | None = None,
+    offset: int = 0,
+    limit: int = 100,
+) -> list[Category]:
+    """Return categories visible to an administrator."""
+
+    statement = select(Category).order_by(
+        Category.name,
+        Category.id,
+    )
+
+    if active is not None:
+        statement = statement.where(
+            Category.active.is_(active),
+        )
+
+    statement = statement.offset(offset).limit(limit)
+
+    return list(
+        db.scalars(statement).all()
+    )
+
+
+def list_products(
+    db: Session,
+    *,
+    category_id: int | None = None,
+    active: bool | None = None,
+    offset: int = 0,
+    limit: int = 100,
+) -> list[Product]:
+    """Return products visible to an administrator."""
+
+    statement = select(Product).order_by(
+        Product.name,
+        Product.id,
+    )
+
+    if category_id is not None:
+        statement = statement.where(
+            Product.category_id == category_id,
+        )
+
+    if active is not None:
+        statement = statement.where(
+            Product.active.is_(active),
+        )
+
+    statement = statement.offset(offset).limit(limit)
+
+    return list(
+        db.scalars(statement).all()
+    )
+
+
 def create_category(
     db: Session,
     *,
@@ -42,13 +100,13 @@ def create_category(
     try:
         existing_category = db.scalar(
             select(Category).where(
-                Category.name == name
+                Category.name == name,
             )
         )
 
         if existing_category is not None:
             raise CategoryNameConflictError(
-                "Category name already exists"
+                "Category name already exists",
             )
 
         category = Category(
@@ -67,7 +125,7 @@ def create_category(
         db.rollback()
 
         raise CategoryNameConflictError(
-            "Category name already exists"
+            "Category name already exists",
         ) from error
 
     except Exception:
@@ -87,14 +145,14 @@ def update_category(
         category = db.scalar(
             select(Category)
             .where(
-                Category.id == category_id
+                Category.id == category_id,
             )
             .with_for_update()
         )
 
         if category is None:
             raise CategoryNotFoundError(
-                "Category not found"
+                "Category not found",
             )
 
         new_name = changes.get("name")
@@ -112,7 +170,7 @@ def update_category(
 
             if conflicting_category is not None:
                 raise CategoryNameConflictError(
-                    "Category name already exists"
+                    "Category name already exists",
                 )
 
         if changes.get("active") is False:
@@ -128,7 +186,7 @@ def update_category(
 
             if active_product_id is not None:
                 raise CategoryHasActiveProductsError(
-                    "Category has active products"
+                    "Category has active products",
                 )
 
         for field_name, value in changes.items():
@@ -143,7 +201,7 @@ def update_category(
         db.rollback()
 
         raise CategoryNameConflictError(
-            "Category name already exists"
+            "Category name already exists",
         ) from error
 
     except Exception:
@@ -168,19 +226,19 @@ def create_product(
         category = db.scalar(
             select(Category)
             .where(
-                Category.id == category_id
+                Category.id == category_id,
             )
             .with_for_update()
         )
 
         if category is None:
             raise CategoryNotFoundError(
-                "Category not found"
+                "Category not found",
             )
 
         if active and not category.active:
             raise InactiveCategoryError(
-                "Active product requires an active category"
+                "Active product requires an active category",
             )
 
         product = Product(
@@ -216,14 +274,14 @@ def update_product(
         product = db.scalar(
             select(Product)
             .where(
-                Product.id == product_id
+                Product.id == product_id,
             )
             .with_for_update()
         )
 
         if product is None:
             raise ProductNotFoundError(
-                "Product not found"
+                "Product not found",
             )
 
         effective_category_id = int(
@@ -243,19 +301,19 @@ def update_product(
         category = db.scalar(
             select(Category)
             .where(
-                Category.id == effective_category_id
+                Category.id == effective_category_id,
             )
             .with_for_update()
         )
 
         if category is None:
             raise CategoryNotFoundError(
-                "Category not found"
+                "Category not found",
             )
 
         if effective_active and not category.active:
             raise InactiveCategoryError(
-                "Active product requires an active category"
+                "Active product requires an active category",
             )
 
         for field_name, value in changes.items():
