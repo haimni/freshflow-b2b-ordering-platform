@@ -6,6 +6,7 @@ import {
 } from '../api/adminCatalog'
 import { ApiError } from '../api/http'
 import AdminCategoryDialog from '../components/AdminCategoryDialog'
+import AdminProductDialog from '../components/AdminProductDialog'
 import type {
   AdminCategory,
   AdminProduct,
@@ -73,6 +74,18 @@ function sortCategories(
   )
 }
 
+function sortProducts(
+  products: AdminProduct[],
+): AdminProduct[] {
+  return [...products].sort(
+    (firstProduct, secondProduct) =>
+      firstProduct.name.localeCompare(
+        secondProduct.name,
+        'he',
+      ),
+  )
+}
+
 function AdminCatalogPage({
   onUnauthorized,
 }: AdminCatalogPageProps) {
@@ -90,6 +103,11 @@ function AdminCatalogPage({
   const [
     showCategoryDialog,
     setShowCategoryDialog,
+  ] = useState(false)
+
+  const [
+    showProductDialog,
+    setShowProductDialog,
   ] = useState(false)
 
   const [editingCategory, setEditingCategory] =
@@ -215,6 +233,27 @@ function AdminCatalogPage({
     closeCategoryDialog()
   }
 
+  function handleProductCreated(
+    product: AdminProduct,
+  ) {
+    setCatalogState((currentState) => {
+      if (currentState.status !== 'loaded') {
+        return currentState
+      }
+
+      return {
+        status: 'loaded',
+        categories: currentState.categories,
+        products: sortProducts([
+          ...currentState.products,
+          product,
+        ]),
+      }
+    })
+
+    setShowProductDialog(false)
+  }
+
   return (
     <section className="admin-catalog-page">
       <div className="admin-catalog-heading">
@@ -242,16 +281,31 @@ function AdminCatalogPage({
               </span>
             </div>
 
-            <button
-              type="button"
-              className="admin-create-category-button"
-              onClick={() => {
-                setEditingCategory(null)
-                setShowCategoryDialog(true)
-              }}
-            >
-              קטגוריה חדשה
-            </button>
+            <div className="admin-catalog-create-actions">
+              <button
+                type="button"
+                className="admin-create-category-button"
+                onClick={() => {
+                  setEditingCategory(null)
+                  setShowCategoryDialog(true)
+                }}
+              >
+                קטגוריה חדשה
+              </button>
+
+              <button
+                type="button"
+                className="admin-create-product-button"
+                disabled={
+                  catalogState.categories.length === 0
+                }
+                onClick={() =>
+                  setShowProductDialog(true)
+                }
+              >
+                מוצר חדש
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -302,7 +356,7 @@ function AdminCatalogPage({
                       <span
                         className={
                           category.active
-                                                       ? 'admin-catalog-state admin-catalog-state--active'
+                            ? 'admin-catalog-state admin-catalog-state--active'
                             : 'admin-catalog-state admin-catalog-state--inactive'
                         }
                       >
@@ -499,6 +553,18 @@ function AdminCatalogPage({
           onUnauthorized={onUnauthorized}
         />
       )}
+
+      {showProductDialog &&
+        catalogState.status === 'loaded' && (
+          <AdminProductDialog
+            categories={catalogState.categories}
+            onClose={() =>
+              setShowProductDialog(false)
+            }
+            onCreated={handleProductCreated}
+            onUnauthorized={onUnauthorized}
+          />
+        )}
     </section>
   )
 }

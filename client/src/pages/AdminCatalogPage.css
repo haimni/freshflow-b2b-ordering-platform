@@ -354,3 +354,39 @@
   border-color: #15803d;
   background: #dcfce7;
 }
+
+.admin-catalog-create-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-create-product-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #166534;
+  border-radius: 9px;
+  color: #166534;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-create-product-button:hover:not(:disabled) {
+  background: #f0fdf4;
+}
+
+.admin-create-product-button:disabled {
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .admin-catalog-create-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
