@@ -1,0 +1,234 @@
+.admin-inventory-dialog-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgb(15 23 42 / 55%);
+  backdrop-filter: blur(4px);
+}
+
+.admin-inventory-dialog {
+  width: min(100%, 560px);
+  overflow: hidden;
+  border: 1px solid #dbe7df;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 28px 80px rgb(15 23 42 / 24%);
+}
+
+.admin-inventory-dialog-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e2e8e5;
+}
+
+.admin-inventory-dialog-heading span {
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-inventory-dialog-heading h2 {
+  margin: 5px 0 0;
+  color: var(--heading-color);
+  font-size: 24px;
+}
+
+.admin-inventory-dialog-close {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #475569;
+  background: #f1f5f9;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.admin-inventory-dialog-close:hover:not(:disabled) {
+  color: #0f172a;
+  background: #e2e8f0;
+}
+
+.admin-inventory-dialog-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-inventory-form {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+}
+
+.admin-inventory-stock-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-inventory-stock-summary div {
+  padding: 16px;
+  border: 1px solid #dbe7df;
+  border-radius: 14px;
+  background: #f8faf9;
+}
+
+.admin-inventory-stock-summary span,
+.admin-inventory-stock-summary strong {
+  display: block;
+}
+
+.admin-inventory-stock-summary span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-inventory-stock-summary strong {
+  margin-top: 6px;
+  color: #166534;
+  font-size: 22px;
+}
+
+.admin-inventory-stock-summary
+  .admin-inventory-negative-stock {
+  color: #b91c1c;
+}
+
+.admin-inventory-field {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-inventory-field > span {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-inventory-field input,
+.admin-inventory-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 11px;
+  color: #0f172a;
+  background: #ffffff;
+  font: inherit;
+  outline: none;
+}
+
+.admin-inventory-field input {
+  min-height: 46px;
+  padding: 0 13px;
+}
+
+.admin-inventory-field textarea {
+  resize: vertical;
+  min-height: 105px;
+  padding: 12px 13px;
+  line-height: 1.6;
+}
+
+.admin-inventory-field input:focus,
+.admin-inventory-field textarea:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgb(34 197 94 / 12%);
+}
+
+.admin-inventory-field input:disabled,
+.admin-inventory-field textarea:disabled {
+  color: #64748b;
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.admin-inventory-field small {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.admin-inventory-form-error {
+  padding: 11px 13px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  background: #fef2f2;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-inventory-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.admin-inventory-cancel-button,
+.admin-inventory-submit-button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-inventory-cancel-button {
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #ffffff;
+}
+
+.admin-inventory-submit-button {
+  border: 1px solid #15803d;
+  color: #ffffff;
+  background: #15803d;
+}
+
+.admin-inventory-submit-button:hover:not(:disabled) {
+  background: #166534;
+}
+
+.admin-inventory-cancel-button:disabled,
+.admin-inventory-submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 560px) {
+  .admin-inventory-dialog-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .admin-inventory-dialog {
+    border-radius: 22px 22px 0 0;
+  }
+
+  .admin-inventory-stock-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-inventory-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-inventory-cancel-button,
+  .admin-inventory-submit-button {
+    width: 100%;
+  }
+}

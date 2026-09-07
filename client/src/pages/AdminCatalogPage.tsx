@@ -6,11 +6,13 @@ import {
 } from '../api/adminCatalog'
 import { ApiError } from '../api/http'
 import AdminCategoryDialog from '../components/AdminCategoryDialog'
+import AdminInventoryDialog from '../components/AdminInventoryDialog'
 import AdminProductDialog from '../components/AdminProductDialog'
 import type {
   AdminCategory,
   AdminProduct,
 } from '../types/adminCatalog'
+import type { AdminInventoryAdjustment } from '../types/adminInventory'
 import './AdminCatalogPage.css'
 
 interface AdminCatalogPageProps {
@@ -114,6 +116,9 @@ function AdminCatalogPage({
     useState<AdminCategory | null>(null)
 
   const [editingProduct, setEditingProduct] =
+    useState<AdminProduct | null>(null)
+
+  const [inventoryProduct, setInventoryProduct] =
     useState<AdminProduct | null>(null)
 
   useEffect(() => {
@@ -284,6 +289,31 @@ function AdminCatalogPage({
     })
 
     closeProductDialog()
+  }
+
+  function handleInventoryAdjusted(
+    adjustment: AdminInventoryAdjustment,
+  ) {
+    setCatalogState((currentState) => {
+      if (currentState.status !== 'loaded') {
+        return currentState
+      }
+
+      return {
+        status: 'loaded',
+        categories: currentState.categories,
+        products: currentState.products.map((product) =>
+          product.id === adjustment.product_id
+            ? {
+                ...product,
+                stock: adjustment.stock_after,
+              }
+            : product,
+        ),
+      }
+    })
+
+    setInventoryProduct(null)
   }
 
   return (
@@ -533,6 +563,16 @@ function AdminCatalogPage({
                         </div>
 
                         <div className="admin-product-card-actions">
+                          <button
+                            type="button"
+                            className="admin-adjust-inventory-button"
+                            onClick={() =>
+                              setInventoryProduct(product)
+                            }
+                          >
+                            עדכון מלאי
+                          </button>
+
                           <span
                             className={
                               product.active
@@ -612,6 +652,15 @@ function AdminCatalogPage({
             onUnauthorized={onUnauthorized}
           />
         )}
+
+      {inventoryProduct && (
+        <AdminInventoryDialog
+          product={inventoryProduct}
+          onClose={() => setInventoryProduct(null)}
+          onAdjusted={handleInventoryAdjusted}
+          onUnauthorized={onUnauthorized}
+        />
+      )}
     </section>
   )
 }
