@@ -136,7 +136,7 @@ function DashboardPage({
                   setAdminView('inventory')
                 }
               >
-                היסטוריית מלאי
+                התאמות מלאי  
               </button>
             </nav>
           )}
