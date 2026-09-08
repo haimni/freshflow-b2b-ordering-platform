@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import AdminCatalogPage from './AdminCatalogPage'
+import AdminInventoryPage from './AdminInventoryPage'
 import AdminOrdersPage from './AdminOrdersPage'
 import CustomerCatalogPage from './CustomerCatalogPage'
 import CustomerOrdersPage from './CustomerOrdersPage'
@@ -15,7 +16,11 @@ interface DashboardPageProps {
 }
 
 type CustomerView = 'catalog' | 'orders'
-type AdminView = 'orders' | 'catalog'
+
+type AdminView =
+  | 'orders'
+  | 'catalog'
+  | 'inventory'
 
 const roleLabels: Record<UserRole, string> = {
   admin: 'מנהל מערכת',
@@ -118,6 +123,21 @@ function DashboardPage({
               >
                 קטלוג
               </button>
+
+              <button
+                type="button"
+                className={
+                  adminView === 'inventory'
+                    ? 'dashboard-navigation-button dashboard-navigation-button--active'
+                    : 'dashboard-navigation-button'
+                }
+                aria-pressed={adminView === 'inventory'}
+                onClick={() =>
+                  setAdminView('inventory')
+                }
+              >
+                היסטוריית מלאי
+              </button>
             </nav>
           )}
 
@@ -142,14 +162,26 @@ function DashboardPage({
               onUnauthorized={onLogout}
             />
           )
-        ) : adminView === 'orders' ? (
-          <AdminOrdersPage
-            onUnauthorized={onLogout}
-          />
         ) : (
-          <AdminCatalogPage
-            onUnauthorized={onLogout}
-          />
+          <>
+            {adminView === 'orders' && (
+              <AdminOrdersPage
+                onUnauthorized={onLogout}
+              />
+            )}
+
+            {adminView === 'catalog' && (
+              <AdminCatalogPage
+                onUnauthorized={onLogout}
+              />
+            )}
+
+            {adminView === 'inventory' && (
+              <AdminInventoryPage
+                onUnauthorized={onLogout}
+              />
+            )}
+          </>
         )}
       </main>
 
